@@ -4,8 +4,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h> 
+#include <netinet/in.h> 
+#include <netdb.h>  
 
 void client(char *ip, int portno)
 {
@@ -21,7 +21,7 @@ void client(char *ip, int portno)
 	server = gethostbyname(ip);
 	if (server == NULL) {
 		fprintf(stderr,"ERROR, no such host\n");
-		exit(0);
+		//exit(0);
 	}
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;

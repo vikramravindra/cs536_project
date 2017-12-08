@@ -1,5 +1,6 @@
 /* --------------- Alice -----------------------*/
-#include <thread.h>
+#include <thread>
+
 #include "server.cpp"
 #include "client.cpp"
 
@@ -9,9 +10,10 @@
 
 int main()
 {
-	std::thread server_thread(server, ALICE_PORTNO);
-	std::thread client_thread_1(client, "127.0.0.1", CAROL_PORTNO);
-	std::thread client_thread_2(client, "127.0.0.1", BOB_PORTNO);
+	char ip[] = "127.0.0.1";
+	std::thread server_thread(server, ALICE_PORT);
+	std::thread client_thread_1(client, ip, CAROL_PORT);
+	std::thread client_thread_2(client, ip, BOB_PORT);
 
 	server_thread.join();
 	client_thread_1.join();

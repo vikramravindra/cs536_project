@@ -1,6 +1,5 @@
 /* --------------- Alice -----------------------*/
-#include <thread>
-
+#include "includes.h"
 #include "server.cpp"
 #include "client.cpp"
 

@@ -2,8 +2,6 @@
 #include "includes.h"
 
 
-
-
 #define ALICE_PORT 1111
 #define CAROL_PORT 2222
 #define BOB_PORT 3333
@@ -41,6 +39,7 @@ struct message
 
 int main(int argc, char* argv[])
 {
+
 	char ip[] = "127.0.0.1";	//localhost
 	int x_A, y_A;
 	//Establish connections with remote hosts i.e Bob & Carol
@@ -57,7 +56,7 @@ int main(int argc, char* argv[])
 		printf("Alice's Share of Sum : %d\n", s_A);
 		return 1;
 	}
-	else if (argv[1] == "*")		//Oblivious Multiplication
+	else if (argv[1] == "x")		//Oblivious Multiplication
 	{
 		int p_A, p1_A, p2_A;
 		x_A = std::atoi(argv[2]);
@@ -82,19 +81,7 @@ int main(int argc, char* argv[])
 	server_thread.join();
 	client_thread.join();
 
-int main()
-{
-	char ip[] = "127.0.0.1";
-	std::thread server_thread(server, ALICE_PORT);
-	std::thread client_thread_1(client, ip, CAROL_PORT);
-	std::thread client_thread_2(client, ip, BOB_PORT);
 
-	server_thread.join();
-	client_thread_1.join();
-	client_thread_2.join();
-
-
-	return 1;
 
 	return 1;
 
@@ -152,6 +139,63 @@ int server(int portno, char op)
 	return 0;
 }
 
+
+
+
+/*---------------- Subroutines ----------------*/
+
+int server(int portno, char op)
+{
+	int sockfd, newsockfd;
+	socklen_t clilen;
+	char buffer[256];
+	ssize_t r;
+	int n;
+
+	struct sockaddr_in serv_addr, cli_addr;
+
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sockfd < 0)
+		printf("ERROR opening socket");
+	bzero((char *)&serv_addr, sizeof(serv_addr));
+	//portno = atoi(argv[1]);
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(portno);
+	if (bind(sockfd, (struct sockaddr *) &serv_addr,
+		sizeof(serv_addr)) < 0)
+		printf("ERROR on binding");
+
+	listen(sockfd, 5);
+	clilen = sizeof(cli_addr);
+	newsockfd = accept(sockfd,
+		(struct sockaddr *) &cli_addr,
+		&clilen);
+	if (newsockfd < 0)
+	{
+		printf("ERROR on accept at Alice's Server!");
+		return 1;
+	}
+	while (1)
+	{
+		//bzero(buffer,256);
+		//n = read(newsockfd,buffer,255);
+		//if (n < 0) printf("ERROR reading from socket");
+		//printf("Here is the message: %s\n",buffer);
+		if (send_to_Bob)
+		{
+			send_to_Bob = 0;
+			n = write(newsockfd, &msg_for_Bob, sizeof(msg_for_Bob), 0);
+		}
+		if (n < 0) printf("ERROR writing to socket");
+		sleep(1);
+	}
+	//close(newsockfd);
+	//close(sockfd);
+
+	return 0;
+}
+
 void client(char *ip, int portno, char op)
 {
 	int sockfd, n;
@@ -179,19 +223,21 @@ void client(char *ip, int portno, char op)
 	while (1)
 	{
 
-		printf("Please enter the message: ");
-		bzero(buffer, 256);
-		fgets(buffer, 255, stdin);
-		n = write(sockfd, buffer, strlen(buffer));
+		//printf("Please enter the message: ");
+		//bzero(buffer,256);
+		//fgets(buffer,255,stdin);
+		if (send_to_Carol)
+		{
+			send_to_Carol = 0;
+			n = write(sockfd, &msg_to_Carol, sizeof(msg_to_Carol), 0);
+		}
 		if (n < 0)
 			printf("ERROR writing to socket");
-		bzero(buffer, 256);
-		n = read(sockfd, buffer, 255);
-		if (n < 0)
-			printf("ERROR reading from socket");
-		printf("%s\n", buffer);
+		//bzero(buffer,256);
+		//n = read(sockfd,buffer,255);
+		//if (n < 0) 
+		//	printf("ERROR reading from socket");
+		//printf("%s\n",buffer);
 	}
 	close(sockfd);
 }
-=======
-

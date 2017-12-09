@@ -6,6 +6,8 @@
 #define CAROL_PORT 2222
 #define BOB_PORT 3333
 using namespace std;
+/* structure of message that is sent and received */
+
 typedef struct message
 {
 	/*int P[100][5];
@@ -19,20 +21,19 @@ typedef struct message
 	
 }message;
 
+/* Variables for syncing threads */
 float state_C = 0.0;
-extern float state_A;
-extern float state_B;
 int client_done = 0, server_done = 0, main_done_1 = 0, main_done_2 = 0;
-
 int p_A, p_B, q_A, q_B;
 
+/* Signatures of subroutines */
 void server(int , char );
 void client(char *, int , char );
 
 int main(int argc, char* argv[])
 {
 	char op = argv[1][0];
-	if(op =='+')
+	if(op =='+') // Carol has nothing to do in case of addition
 		return 1;
 	
 	char ip[] = "127.0.0.1";
@@ -42,7 +43,7 @@ int main(int argc, char* argv[])
 
 	switch(op)
 	{
-		case '*': 
+		case '*': //Carol in multiplication (helper) protocol
 			while(client_done != 1 && server_done != 1);
 			client_done = 0;
 			server_done = 0;
@@ -107,14 +108,16 @@ void client(char *ip, int portno, char op)
 			p_B = buffer->scalar1;
 			client_done = 1;
 			while(!main_done_1);
-			n = write(sockfd, &q_B, sizeof(int));
+			buffer->scalar1 = q_B;
+			n = write(sockfd, buffer, sizeof(struct message));
 
 			//bzero(buffer, sizeof(struct message));
 			n = read(sockfd,buffer,sizeof(struct message));
 			p_B = buffer->scalar1;
 			client_done = 1;
 			while(!main_done_2);
-			n = write(sockfd, &q_B, sizeof(int));
+			buffer->scalar1 = q_B;
+			n = write(sockfd, buffer, sizeof(struct message));
 			break;
 			
 		default:

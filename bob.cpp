@@ -37,27 +37,27 @@ struct message
 
 /*-------------- Main Program ----------------*/
 
-int main(int argc, char* argv)
+int main(int argc, char* argv[])
 {
 	char ip[] = "127.0.0.1";	//localhost
 	int x_B, y_B;
-	std::thread server_thread(server, BOB_PORT);	//As server to Carol
+	std::thread server_thread(server, BOB_PORT, argv[1][0]);	//As server to Carol
 	sleep(5);		//wait 5 seconds for Alice & Carol to go live
-	std::thread client_thread(client, ip, ALICE_PORT);	//As client to Alice
-	if (argv[1] == '+')
+	std::thread client_thread(client, ip, ALICE_PORT, argv[1][0]);	//As client to Alice
+	if (strcmp(argv[1] ,"+") == 0)
 	{
 		int s_B;
-		x_B = atoi(argv[2]);
-		y_B = atoi(argv[3]);
+		x_B = std::atoi(argv[2]);
+		y_B = std::atoi(argv[3]);
 		s_B = x_B + y_B;
 		printf("Bob's Share of Sum : %d\n", s_B);
 		return 1;
 	}
-	else if (argv[1] == 'x')
+	else if (strcmp(argv[1],"x") == 0)
 	{
 		int p_B, p1_B, p2_B;
-		x_B = atoi(argv[2]);
-		y_B = atoi(argv[3]);
+		x_B = std::atoi(argv[2]);
+		y_B = std::atoi(argv[3]);
 		p_B = x_B * y_B;	//Bob locally computes x"y"
 
 							//Preparing to initiate OMHelper
@@ -67,7 +67,7 @@ int main(int argc, char* argv)
 		msg_for_Alice.scalar1 = b_1; 	//Bob prepares b_1 for Alice 
 		msg_for_Carol.scalar1 = b_2;	//Bob prepares b_2 for Carol
 
-		send_to_Bob = 1;	//Signal client thread to send b_1 to Alice
+		send_to_Alice = 1;	//Signal client thread to send b_1 to Alice
 		send_to_Carol = 1;	//Signal server thread to send b_2 to Carol
 
 	}
@@ -122,7 +122,7 @@ int server(int portno, char op)
 		if (send_to_Carol)
 		{
 			send_to_Carol = 0;
-			n = write(newsockfd, &msg_for_Carol, sizeof(msg_for_Carol), 0);
+			n = write(newsockfd, &msg_for_Carol, sizeof(msg_for_Carol));
 		}
 		if (n < 0) printf("ERROR writing to socket");
 		sleep(1);
@@ -166,7 +166,7 @@ void client(char *ip, int portno, char op)
 		if (send_to_Alice)
 		{
 			send_to_Alice = 0;
-			n = write(sockfd, &msg_to_Alice, sizeof(msg_to_Alice), 0);
+			n = write(sockfd, &msg_for_Alice, sizeof(msg_for_Alice));
 		}
 		if (n < 0)
 			printf("ERROR writing to socket");

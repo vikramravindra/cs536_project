@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 	sleep(5);		//wait 5 seconds for Bob and Carol to go live
 	std::thread client_thread(client, ip, CAROL_PORT, argv[1][0]); //Alice as client to Carol
 
-	if (argv[1] == "+")		//Oblivious Addition
+	if (strcmp(argv[1], "+") == 0)		//Oblivious Addition
 	{
 		int s_A;
 		x_A = std::atoi(argv[2]);
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 		printf("Alice's Share of Sum : %d\n", s_A);
 		return 1;
 	}
-	else if (argv[1] == "x")		//Oblivious Multiplication
+	else if (strcmp(argv[1], "x") == 0)		//Oblivious Multiplication
 	{
 		int p_A, p1_A, p2_A;
 		x_A = std::atoi(argv[2]);
@@ -85,58 +85,6 @@ int main(int argc, char* argv[])
 
 	return 1;
 
-}
-
-
-
-/*---------------- Subroutines ----------------*/
-
-int server(int portno, char op)
-{
-	int sockfd, newsockfd;
-	socklen_t clilen;
-	char buffer[256];
-	ssize_t r;
-	int n;
-
-	struct sockaddr_in serv_addr, cli_addr;
-
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0)
-		printf("ERROR opening socket");
-	bzero((char *)&serv_addr, sizeof(serv_addr));
-	//portno = atoi(argv[1]);
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons(portno);
-	if (bind(sockfd, (struct sockaddr *) &serv_addr,
-		sizeof(serv_addr)) < 0)
-		printf("ERROR on binding");
-
-	listen(sockfd, 5);
-	clilen = sizeof(cli_addr);
-	newsockfd = accept(sockfd,
-		(struct sockaddr *) &cli_addr,
-		&clilen);
-	if (newsockfd < 0)
-	{
-		printf("ERROR on accept at Alice's Server!");
-		return 1;
-	}
-	while (1)
-	{
-		//bzero(buffer,256);
-		//n = read(newsockfd,buffer,255);
-		//if (n < 0) printf("ERROR reading from socket");
-		printf("Here is the message: %s\n", buffer);
-		n = write(newsockfd, "I got your message", 18);
-		if (n < 0) printf("ERROR writing to socket");
-		sleep(1);
-	}
-	//close(newsockfd);
-	//close(sockfd);
-
-	return 0;
 }
 
 
@@ -185,9 +133,9 @@ int server(int portno, char op)
 		if (send_to_Bob)
 		{
 			send_to_Bob = 0;
-			n = write(newsockfd, &msg_for_Bob, sizeof(msg_for_Bob), 0);
+			n = write(newsockfd, &msg_for_Bob, sizeof(msg_for_Bob));
+			if (n < 0) printf("ERROR writing to socket");
 		}
-		if (n < 0) printf("ERROR writing to socket");
 		sleep(1);
 	}
 	//close(newsockfd);
@@ -229,7 +177,7 @@ void client(char *ip, int portno, char op)
 		if (send_to_Carol)
 		{
 			send_to_Carol = 0;
-			n = write(sockfd, &msg_to_Carol, sizeof(msg_to_Carol), 0);
+			n = write(sockfd, &msg_for_Carol, sizeof(msg_for_Carol));
 		}
 		if (n < 0)
 			printf("ERROR writing to socket");

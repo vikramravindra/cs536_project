@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 
 	switch(op)
 	{
-		case '*': //Carol in multiplication (helper) protocol
-			while(client_done != 1 && server_done != 1);
+		case 'x': //Carol in multiplication (helper) protocol
+			while(client_done != 1 || server_done != 1);
 			client_done = 0;
 			server_done = 0;
 			srand(0);				
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 			q_B = p_A * p_B - q_A;
 			main_done_1 = 1;
 
-			while(client_done != 1 && server_done != 1);
+			while(client_done != 1 || server_done != 1);
 			client_done = 0;
 			server_done = 0;				
 			q_A = rand();
@@ -101,10 +101,11 @@ void client(char *ip, int portno, char op)
 
 	switch(op)
 	{
-		case '*': 
+		case 'x': 
 			/* read b_2 */
 			//bzero(buffer, sizeof(struct message));
 			n = read(sockfd,buffer,sizeof(struct message));
+			printf("Finished reading. Receieved %d from B\n", buffer->scalar1);
 			p_B = buffer->scalar1;
 			client_done = 1;
 			while(!main_done_1);
@@ -167,21 +168,24 @@ void server(int portno, char op)
 
 	switch(op)
 	{
-		case '*': 
+		case 'x': 
 			/* read a_2 */
 			//bzero(buffer, sizeof(int));
-			n = read(sockfd,buffer,sizeof(int));
+			n = read(newsockfd,buffer,sizeof(struct message));
+			printf("Finished reading. Receieved %d from A\n", buffer->scalar1);
 			p_A = buffer->scalar1;		
 			server_done = 1;	
 			while(!main_done_1);
-			n = write(sockfd, &q_A, sizeof(int));
+			buffer->scalar1 = q_A;
+			n = write(newsockfd, buffer, sizeof(message));
 
 			//bzero(buffer, sizeof(int));
-			n = read(sockfd, buffer,sizeof(int));
+			n = read(newsockfd, buffer,sizeof(struct message));
 			p_A = buffer->scalar1;		
 			server_done = 1;	
 			while(!main_done_2);
-			n = write(sockfd, &q_A, sizeof(int));
+			buffer->scalar1 = q_A;
+			n = write(newsockfd, buffer, sizeof(struct message));
 			break;
 
 		default:
